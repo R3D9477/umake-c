@@ -7,3 +7,5 @@ universal mega make file :)
 * mk_pkg.list - set of packages from pkg-config to include
 * mk_prebuild.list - set of directories with makefile, which should be run before building
 * mk_postbuild.list - set of directories with makefile, which should be run after building
+
+Note: by default makefile will try to search files in directory ../umake-config
