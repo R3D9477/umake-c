@@ -82,11 +82,11 @@ escspace     = $(empty)\ $(empty)
 ########################################################################################################################
 # CONFIG: PATH
 
-MK_SOURCE    ?= "mk_source.list"
-MK_INCLUDE   ?= "mk_include.list"
-MK_PKG       ?= "mk_pkg.list"
-MK_PREMAKE   ?= "mk_prebuild.list"
-MK_POSTMAKE  ?= "mk_postbuild.list"
+MK_SOURCE    ?= "../umake-conf/mk_source.list"
+MK_INCLUDE   ?= "../umake-conf/mk_include.list"
+MK_PKG       ?= "../umake-conf/mk_pkg.list"
+MK_PREMAKE   ?= "../umake-conf/mk_prebuild.list"
+MK_POSTMAKE  ?= "../umake-conf/mk_postbuild.list"
 
 ESCSRCDIR    = $(foreach DIR,$(call CAT,$(MK_SOURCE)),$(subst $(space),$(escspace),$(DIR)))
 ESCINCDIR    = $(foreach DIR,$(call CAT,$(MK_INCLUDE)),$(subst $(space),$(escspace),$(DIR)))
