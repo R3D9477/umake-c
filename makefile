@@ -3,10 +3,10 @@
 
 APPNAME   ?= main
 
-DBGBINDIR ?= bin/debug
-DBGOBJDIR ?= obj/debug
-RELBINDIR ?= bin/release
-RELOBJDIR ?= obj/release
+DBGBINDIR ?= ../bin/debug
+DBGOBJDIR ?= ../obj/debug
+RELBINDIR ?= ../bin/release
+RELOBJDIR ?= ../obj/release
 
 ########################################################################################################################
 # CONFIG: SYSTEM
