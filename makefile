@@ -59,10 +59,10 @@ else
 endif
 
 ifeq ($(TARGETOS),windows)
-	CCFLAGS ?= -D WIN32
+	CCFLAGS = -D WIN32
 endif
 ifeq ($(TARGETOS),linux)
-	CCFLAGS ?= -D LINUX
+	CCFLAGS = -D LINUX
 endif
 
 ifeq ($(TARGETARCH),x86_64)
@@ -82,11 +82,15 @@ escspace     = $(empty)\ $(empty)
 ########################################################################################################################
 # CONFIG: PATH
 
+SRCEXT       ?= c
+
 MK_SOURCE    ?= "../umake-conf/mk_source.list"
 MK_INCLUDE   ?= "../umake-conf/mk_include.list"
 MK_PKG       ?= "../umake-conf/mk_pkg.list"
 MK_PREMAKE   ?= "../umake-conf/mk_prebuild.list"
 MK_POSTMAKE  ?= "../umake-conf/mk_postbuild.list"
+
+PKGS         = $(call CAT,$(MK_PKG))
 
 ESCSRCDIR    = $(foreach DIR,$(call CAT,$(MK_SOURCE)),$(subst $(space),$(escspace),$(DIR)))
 ESCINCDIR    = $(foreach DIR,$(call CAT,$(MK_INCLUDE)),$(subst $(space),$(escspace),$(DIR)))
@@ -95,26 +99,31 @@ ESCDBGBINDIR = $(subst $(space),$(escspace),$(DBGBINDIR))
 ESCDBGOBJDIR = $(subst $(space),$(escspace),$(DBGOBJDIR))
 ESCRELBINDIR = $(subst $(space),$(escspace),$(RELBINDIR))
 ESCRELOBJDIR = $(subst $(space),$(escspace),$(RELOBJDIR))
-SRCS         = $(foreach DIR,$(ESCSRCDIR),$(wildcard $(DIR)/*.c))
+SRCS         = $(foreach DIR,$(ESCSRCDIR),$(wildcard $(DIR)/*.$(SRCEXT)))
 VPATH        = $(sort $(dir $(SRCS)))
 DBGTARGET    = $(ESCDBGBINDIR)/$(ESCAPPNAME)
-DBGOBJS      = $(patsubst %.c, $(ESCDBGOBJDIR)/%.o, $(notdir $(SRCS)))
+DBGOBJS      = $(patsubst %.$(SRCEXT), $(ESCDBGOBJDIR)/%.o, $(notdir $(SRCS)))
 RELTARGET    = $(ESCRELBINDIR)/$(ESCAPPNAME)
-RELOBJS      = $(patsubst %.c, $(ESCRELOBJDIR)/%.o, $(notdir $(SRCS)))
+RELOBJS      = $(patsubst %.$(SRCEXT), $(ESCRELOBJDIR)/%.o, $(notdir $(SRCS)))
 
 ########################################################################################################################
 # CONFIG: COMPILER
 
 CC        ?= gcc
 
-CLFLAGS   += $(foreach INCFILE,$(ESCINCDIR),-I$(INCFILE)) `pkg-config --cflags $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
+CLFLAGS   += $(foreach INCFILE,$(ESCINCDIR),-I$(INCFILE))
 CCFLAGS   += -Wall -pipe
 
 LDFLAGS   ?= -rdynamic
-LDLIBS    ?= `pkg-config --libs $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
+LDLIBS    ?=
 
-DBGCFLAGS := -g3 -DDEBUG
-RELCFLAGS := -O3 -DNDEBUG
+ifneq ($(PKGS),)
+CLFLAGS   += `pkg-config --cflags $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
+LDLIBS    += `pkg-config --libs $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
+endif
+
+DBGCFLAGS = -g3 -DDEBUG
+RELCFLAGS = -O3 -DNDEBUG
 
 ########################################################################################################################
 ########################################################################################################################
@@ -133,7 +142,7 @@ debug: prebuild
 
 debug_target: $(DBGTARGET)
 
-$(ESCDBGOBJDIR)/%.o: %.c
+$(ESCDBGOBJDIR)/%.o: %.$(SRCEXT)
 	$(CC) $(CLFLAGS) $(DBGCFLAGS) $(CCFLAGS) -c "$<" -o "$@"
 
 $(DBGTARGET): $(DBGOBJS)
@@ -146,7 +155,7 @@ release: prebuild
 
 release_target:
 
-$(ESCRELOBJDIR)/%.o: %.c
+$(ESCRELOBJDIR)/%.o: %.$(SRCEXT)
 	$(CC) $(CLFLAGS) $(RELCFLAGS) $(CCFLAGS) -c "$<" -o "$@"
 
 $(RELTARGET): $(RELOBJS)
