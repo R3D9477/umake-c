@@ -25,4 +25,10 @@ universal mega make file :)
 * MK_POSTMAKE (by default `../umake-conf/mk_postbuild.list`)
 * CC (by default `gcc`)
 
-Note: by default makefile will try to search files in directory `../umake-config`
+### ToDo:
+* Add support for shared (dynamic) libraries
+  * Build library
+  * Link a library
+* Add support for static libraries
+  * Build library
+  * Link a library
