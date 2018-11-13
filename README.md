@@ -27,8 +27,8 @@ universal makefile, produced to be easy for usage :)
 
 #### ToDo:
 * Add support for shared (dynamic) libraries
-  * Build library
-  * Link a library
+  * Build
+  * Link
 * Add support for static libraries
-  * Build library
-  * Link a library
+  * Build
+  * Link
