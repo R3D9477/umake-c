@@ -1,5 +1,5 @@
 # umake
-universal makefile, produced to be easy to use :)
+universal makefile, produced to be easy for usage :)
 
 #### Config Files:
 * mk_include.list - set of direcotries to include
