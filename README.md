@@ -5,8 +5,9 @@ universal mega make file :)
 * mk_include.list - set of direcotries to include
 * mk_source.list - set of directories with sources
 * mk_pkg.list - set of packages from pkg-config to include
-* mk_prebuild.list - set of directories with makefile, which should be run before building
-* mk_postbuild.list - set of directories with makefile, which should be run after building
+* mk_prebuild.list - set of directories with makefile, which should be run within `build` target before main building
+* mk_postbuild.list - set of directories with makefile, which should be run within `build` target after main building
+* mk_clean.list - set of directories withe makefile, which should be run within `clean` target
 
 #### Variables:
 * APPNAME (by default `main`)

@@ -1,12 +1,13 @@
 ########################################################################################################################
+########################################################################################################################
 # CONFIG: PROJECT
 
 APPNAME   ?= main
 
-DBGBINDIR ?= ../bin/debug
-DBGOBJDIR ?= ../obj/debug
-RELBINDIR ?= ../bin/release
-RELOBJDIR ?= ../obj/release
+DBGBINDIR ?= "../bin/debug"
+DBGOBJDIR ?= "../obj/debug"
+RELBINDIR ?= "../bin/release"
+RELOBJDIR ?= "../obj/release"
 
 ########################################################################################################################
 # CONFIG: SYSTEM
@@ -17,10 +18,10 @@ ifeq ($(OS),Windows_NT)
 	
 	FIXPATH = $(subst /,\,$1)
 	
-	MKDIR = if not exist "$(call FIXPATH,$1)" mkdir "$(call FIXPATH,$1)"
+	MKDIR = $(shell if not exist "$(call FIXPATH,$1)" mkdir "$(call FIXPATH,$1)")
 	CAT = $(shell type "$(call FIXPATH,$1)")
 	PWD = $(shell cd)
-	RM = del "$(call FIXPATH,$1)"
+	RM = $(shell del "$(call FIXPATH,$1)")
 	
 	ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
 		TARGETARCH ?= x86_64
@@ -35,10 +36,10 @@ ifeq ($(OS),Windows_NT)
 else
 	FIXPATH = $(subst \,/,$1)
 	
-	MKDIR = mkdir -p "$(call FIXPATH,$1)"
+	MKDIR = $(shell mkdir -p "$(call FIXPATH,$1)")
 	CAT = $(shell cat "$(call FIXPATH,$1)")
 	PWD = $(shell pwd)
-	RM = rm -f "$(call FIXPATH,$1)"
+	RM = $(shell rm -f "$(call FIXPATH,$1)")
 	
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
@@ -89,22 +90,23 @@ MK_INCLUDE   ?= "../umake-conf/mk_include.list"
 MK_PKG       ?= "../umake-conf/mk_pkg.list"
 MK_PREMAKE   ?= "../umake-conf/mk_prebuild.list"
 MK_POSTMAKE  ?= "../umake-conf/mk_postbuild.list"
+MK_CLEAN     ?= "../umake-conf/mk_clean.list"
 
-PKGS         = $(call CAT,$(MK_PKG))
+PKGS          = $(call CAT,$(MK_PKG))
 
-ESCSRCDIR    = $(foreach DIR,$(call CAT,$(MK_SOURCE)),$(subst $(space),$(escspace),$(DIR)))
-ESCINCDIR    = $(foreach DIR,$(call CAT,$(MK_INCLUDE)),$(subst $(space),$(escspace),$(DIR)))
-ESCAPPNAME   = $(subst $(space),$(escspace),$(APPNAME))$(subst $(space),$(escspace),$(APPEXT))
-ESCDBGBINDIR = $(subst $(space),$(escspace),$(DBGBINDIR))
-ESCDBGOBJDIR = $(subst $(space),$(escspace),$(DBGOBJDIR))
-ESCRELBINDIR = $(subst $(space),$(escspace),$(RELBINDIR))
-ESCRELOBJDIR = $(subst $(space),$(escspace),$(RELOBJDIR))
-SRCS         = $(foreach DIR,$(ESCSRCDIR),$(wildcard $(DIR)/*.$(SRCEXT)))
-VPATH        = $(sort $(dir $(SRCS)))
-DBGTARGET    = $(ESCDBGBINDIR)/$(ESCAPPNAME)
-DBGOBJS      = $(patsubst %.$(SRCEXT), $(ESCDBGOBJDIR)/%.o, $(notdir $(SRCS)))
-RELTARGET    = $(ESCRELBINDIR)/$(ESCAPPNAME)
-RELOBJS      = $(patsubst %.$(SRCEXT), $(ESCRELOBJDIR)/%.o, $(notdir $(SRCS)))
+ESCSRCDIR     = $(foreach DIR,$(call CAT,$(MK_SOURCE)),$(subst $(space),$(escspace),$(DIR)))
+ESCINCDIR     = $(foreach DIR,$(call CAT,$(MK_INCLUDE)),$(subst $(space),$(escspace),$(DIR)))
+ESCAPPNAME    = $(subst $(space),$(escspace),$(APPNAME))$(subst $(space),$(escspace),$(APPEXT))
+ESCDBGBINDIR  = $(subst $(space),$(escspace),$(DBGBINDIR))
+ESCDBGOBJDIR  = $(subst $(space),$(escspace),$(DBGOBJDIR))
+ESCRELBINDIR  = $(subst $(space),$(escspace),$(RELBINDIR))
+ESCRELOBJDIR  = $(subst $(space),$(escspace),$(RELOBJDIR))
+SRCS          = $(foreach DIR,$(ESCSRCDIR),$(wildcard $(DIR)/*.$(SRCEXT)))
+VPATH         = $(sort $(dir $(SRCS)))
+DBGTARGET     = $(ESCDBGBINDIR)/$(ESCAPPNAME)
+DBGOBJS       = $(patsubst %.$(SRCEXT), $(ESCDBGOBJDIR)/%.o, $(notdir $(SRCS)))
+RELTARGET     = $(ESCRELBINDIR)/$(ESCAPPNAME)
+RELOBJS       = $(patsubst %.$(SRCEXT), $(ESCRELOBJDIR)/%.o, $(notdir $(SRCS)))
 
 ########################################################################################################################
 # CONFIG: COMPILER
@@ -122,19 +124,50 @@ CLFLAGS   += `pkg-config --cflags $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
 LDLIBS    += `pkg-config --libs $(foreach PN,$(call CAT,$(MK_PKG)),$(PN))`
 endif
 
-DBGCFLAGS = -g3 -DDEBUG
-RELCFLAGS = -O3 -DNDEBUG
+DBGCFLAGS  = -g3 -DDEBUG
+RELCFLAGS  = -O3 -DNDEBUG
 
 ########################################################################################################################
 ########################################################################################################################
+# TARGETS
 
-.PHONY: clean prebuild postbuild
+.PHONY: clean prep prebuild postbuild
 
 rebuild_debug: clean build_debug
 rebuild_release: clean build_release
 
-build_debug: prep prebuild debug postbuild
-build_release: prep prebuild release postbuild
+build_debug: prep prebuild debug
+build_release: prep prebuild release
+
+########################################################################################################################
+# TARGET: UTILITY
+
+prep:
+
+	$(call MKDIR,$(DBGBINDIR))
+	$(call MKDIR,$(DBGOBJDIR))
+	$(call MKDIR,$(RELBINDIR))
+	$(call MKDIR,$(RELOBJDIR))
+
+prebuild:
+
+	$(foreach C,$(call CAT,$(MK_PREMAKE)),$(MAKE) -C $(C) build)
+
+postbuild:
+
+	$(foreach C,$(call CAT,$(MK_POSTMAKE)),$(MAKE) -C $(C) build)
+
+clean:
+
+	$(call RM,$(DBGTARGET))
+	$(call RM,$(ESCDBGOBJDIR)/*.o)
+	$(call RM,$(RELTARGET))
+	$(call RM,$(ESCRELOBJDIR)/*.o)
+	
+	$(foreach C,$(call CAT,$(MK_CLEAN)),$(MAKE) -C $(C) clean)
+
+########################################################################################################################
+# TARGET: DEBUG
 
 debug: prebuild
 
@@ -149,11 +182,14 @@ $(DBGTARGET): $(DBGOBJS)
 	$(CC) $(LDFLAGS) $(DBGCFLAGS) $^ $(LDLIBS) -o "$@"
 	@$(MAKE) --no-print-directory postbuild
 
+########################################################################################################################
+# TARGET: RELEASE
+
 release: prebuild
 
 	@$(MAKE) --no-print-directory release_target
 
-release_target:
+release_target: $(RELTARGET)
 
 $(ESCRELOBJDIR)/%.o: %.$(SRCEXT)
 	$(CC) $(CLFLAGS) $(RELCFLAGS) $(CCFLAGS) -c "$<" -o "$@"
@@ -161,25 +197,3 @@ $(ESCRELOBJDIR)/%.o: %.$(SRCEXT)
 $(RELTARGET): $(RELOBJS)
 	$(CC) $(LDFLAGS) $(RELCFLAGS) $^ $(LDLIBS) -o "$@"
 	@$(MAKE) --no-print-directory postbuild
-
-prep:
-
-	$(call MKDIR,$(DBGBINDIR))
-	$(call MKDIR,$(DBGOBJDIR))
-	$(call MKDIR,$(RELBINDIR))
-	$(call MKDIR,$(RELOBJDIR))
-
-clean:
-
-	$(call RM,$(DBGTARGET))
-	$(call RM,$(ESCDBGOBJDIR)/*.o)
-	$(call RM,$(RELTARGET))
-	$(call RM,$(ESCRELOBJDIR)/*.o)
-
-prebuild:
-
-	$(foreach C,$(call CAT,$(MK_PREMAKE)),$(MAKE) -C $(C))
-
-postbuild:
-
-	$(foreach C,$(call CAT,$(MK_POSTMAKE)),$(MAKE) -C $(C))
