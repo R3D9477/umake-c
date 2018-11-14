@@ -1,5 +1,5 @@
 # umake
-universal mega make file :)
+universal makefile, produced to be easy for usage :)
 
 #### Config Files:
 * mk_include.list - set of direcotries to include
@@ -28,8 +28,8 @@ universal mega make file :)
 
 #### ToDo:
 * Add support for shared (dynamic) libraries
-  * Build library
-  * Link a library
+  * Build
+  * Link
 * Add support for static libraries
-  * Build library
-  * Link a library
+  * Build
+  * Link
